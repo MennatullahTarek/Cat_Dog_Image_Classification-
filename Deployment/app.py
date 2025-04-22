@@ -1,24 +1,40 @@
-import os
 import streamlit as st
 import tensorflow as tf
 from tensorflow.keras.models import load_model
-from PIL import Image
+from tensorflow.keras.applications import MobileNetV2
+from tensorflow.keras import layers, models
 import numpy as np
+from PIL import Image
+import requests
+from io import BytesIO
 import random
+import os
 
-# ========== Load the model with error handling ==========
+# Function to download the model from Google Drive
+def download_model():
+    file_url = "https://drive.google.com/uc?export=download&id=18RlTZvweyDneAUAVyMsgumENyBb5KHa-"
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        with open("model.h5", "wb") as file:
+            file.write(response.content)
+        st.success("Model downloaded successfully!")
+    else:
+        st.error("Failed to download model.")
+
+# Load the model
 @st.cache_resource
 def load_model_from_file():
-    if not os.path.exists("model.h5"):
-        st.error("❌ model.h5 not found. Please ensure it's in the same directory as app.py.")
-        return None
     return load_model("model.h5")
 
-model = load_model_from_file()
-if model is None:
-    st.stop()
+# Download the model if not already present
+if not os.path.exists("model.h5"):
+    st.info("Downloading model from Google Drive...")
+    download_model()
 
-# ========== Fun facts ==========
+# Load model
+model = load_model_from_file()
+
+# Fun facts
 animal_facts = {
     "cat": [
         "Cats sleep for 70% of their lives!",
@@ -32,7 +48,7 @@ animal_facts = {
     ]
 }
 
-# ========== Custom CSS ==========
+# Custom CSS
 st.markdown("""
     <style>
         .main {
@@ -50,44 +66,35 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown('<div class="main">', unsafe_allow_html=True)
 
-# ========== UI ==========
+# UI Elements
 st.title("🐾 Cat or Dog Classifier")
 st.markdown("Upload a picture, and let's find out if it's a **meow** or a **woof**! 🐶🐱")
 
 uploaded_file = st.file_uploader("📤 Upload an image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    try:
-        img = Image.open(uploaded_file).convert('RGB')
-        st.image(img, caption="Your uploaded image 👆", use_column_width=True)
+    img = Image.open(uploaded_file).convert('RGB')
+    st.image(img, caption="Your uploaded image 👆", use_column_width=True)
 
-        with st.spinner("Analyzing image..."):
-            # Preprocess
-            img_resized = img.resize((180, 180))
-            img_array = np.array(img_resized) / 255.0
-            img_array = np.expand_dims(img_array, axis=0)
+    with st.spinner("Analyzing image..."):
+        # Preprocess image for your model
+        img_resized = img.resize((180, 180))
+        img_array = np.array(img_resized) / 255.0
+        img_array = np.expand_dims(img_array, axis=0)
 
-            # Predict
-            prediction = model.predict(img_array)
-            label = "cat" if prediction[0][0] < 0.5 else "dog"
-            emoji = "🐱" if label == "cat" else "🐶"
+        prediction = model.predict(img_array)
+        label = "cat" if prediction[0][0] < 0.5 else "dog"
+        emoji = "🐱" if label == "cat" else "🐶"
 
-            # Show result
-            st.success(f"{emoji} It's a **{label.upper()}**!")
+        # Result
+        st.success(f"{emoji} It's a **{label.upper()}**!")
 
-            # Sound
-            sound_file = f"{label}.mp3"
-            if os.path.exists(sound_file):
-                with open(sound_file, "rb") as audio_file:
-                    st.audio(audio_file.read(), format="audio/mp3")
-            else:
-                st.warning(f"🔇 Sound file for {label} not found.")
+        # Play sound
+        with open(f"{label}.mp3", "rb") as audio_file:
+            st.audio(audio_file.read(), format="audio/mp3")
 
-            # Fun fact
-            st.markdown(f"💡 **Did you know?** {random.choice(animal_facts[label])}")
-
-    except Exception as e:
-        st.error(f"Something went wrong: {e}")
+        # Fun fact
+        st.markdown(f"💡 **Did you know?** {random.choice(animal_facts[label])}")
 
 st.markdown("</div>", unsafe_allow_html=True)
-st.markdown('<div class="footer">🐾 Made with ❤️ by Mennatullah Tarek </div>', unsafe_allow_html=True)
+st.markdown('<div class="footer">🐾 Made with ❤️ by You</div>', unsafe_allow_html=True)
