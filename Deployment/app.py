@@ -4,6 +4,7 @@ from tensorflow.keras.models import load_model
 from PIL import Image
 import numpy as np
 import random
+import os
 
 # Load model
 @st.cache_resource
@@ -67,16 +68,13 @@ if uploaded_file is not None:
         # Result
         st.success(f"{emoji} It's a **{label.upper()}**!")
 
-        # Play sound
-        if label == "cat":
-            with open("cat.mp3", "rb") as audio_file:
-                st.audio(audio_file.read(), format="audio/mp3")
-        else:
-            with open("dog.mp3", "rb") as audio_file:
+        # Play sound if the file exists
+        if os.path.exists(f"Deployment/{label}.mp3"):
+            with open(f"Deployment/{label}.mp3", "rb") as audio_file:
                 st.audio(audio_file.read(), format="audio/mp3")
 
         # Fun fact
         st.markdown(f"💡 **Did you know?** {random.choice(animal_facts[label])}")
 
 st.markdown("</div>", unsafe_allow_html=True)
-st.markdown('<div class="footer">🐾 Made with ❤️ by You</div>', unsafe_allow_html=True)
+st.markdown('<div class="footer">🐾 Made with ❤️ by MennatullahTarek </div>', unsafe_allow_html=True)
