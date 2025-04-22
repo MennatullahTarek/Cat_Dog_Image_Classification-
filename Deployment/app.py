@@ -4,7 +4,6 @@ from tensorflow.keras.models import load_model
 import numpy as np
 from PIL import Image
 import requests
-from io import BytesIO
 import random
 import os
 
@@ -51,31 +50,31 @@ st.markdown("""
     <style>
         .main {
             background-color: #fef6f0;
-            padding: 30px;
+            padding: 40px;
             border-radius: 12px;
             text-align: center;
+            animation: fadeIn 1.5s ease-in-out;
         }
         .result-box {
             background-color: #ffffff;
-            padding: 20px;
+            padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
             margin-top: 30px;
-            text-align: center;
-            animation: fadeIn 1s ease-in-out;
+            animation: fadeIn 1.5s ease-in-out;
         }
         .upload-box {
             background-color: #ffffff;
-            padding: 20px;
+            padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             margin-top: 30px;
             animation: bounceIn 1s ease-in-out;
         }
         .play-btn {
             background-color: #ff6f61;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 30px;
             border-radius: 5px;
             border: none;
             font-weight: bold;
@@ -152,7 +151,7 @@ if uploaded_file is not None:
         # Fun fact
         st.markdown(f"💡 **Did you know?** {random.choice(animal_facts[label])}")
 
-        # Play sound automatically if the file exists
+        # Play sound automatically after result is shown
         sound_path = f"Deployment/{label}.mp3"
         if os.path.exists(sound_path):
             audio_file = open(sound_path, "rb").read()
