@@ -60,8 +60,8 @@ compliments = {
 st.markdown("""
     <style>
         .main {
-            background: linear-gradient(to right, #e6f7ff, #c3cfe2);
-            padding: 50px;
+            background: linear-gradient(to right, #f0f4f8, #c3cfe2);
+            padding: 40px;
             border-radius: 15px;
             text-align: center;
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
