@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import tensorflow as tf
 from tensorflow.keras.models import load_model
@@ -5,14 +6,19 @@ from PIL import Image
 import numpy as np
 import random
 
-# Load model (cached for efficiency)
+# ========== Load the model with error handling ==========
 @st.cache_resource
 def load_model_from_file():
+    if not os.path.exists("model.h5"):
+        st.error("❌ model.h5 not found. Please ensure it's in the same directory as app.py.")
+        return None
     return load_model("model.h5")
 
 model = load_model_from_file()
+if model is None:
+    st.stop()
 
-# Fun facts
+# ========== Fun facts ==========
 animal_facts = {
     "cat": [
         "Cats sleep for 70% of their lives!",
@@ -26,7 +32,7 @@ animal_facts = {
     ]
 }
 
-# Custom CSS
+# ========== Custom CSS ==========
 st.markdown("""
     <style>
         .main {
@@ -44,40 +50,44 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown('<div class="main">', unsafe_allow_html=True)
 
-# UI
+# ========== UI ==========
 st.title("🐾 Cat or Dog Classifier")
 st.markdown("Upload a picture, and let's find out if it's a **meow** or a **woof**! 🐶🐱")
 
 uploaded_file = st.file_uploader("📤 Upload an image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    img = Image.open(uploaded_file).convert('RGB')
-    st.image(img, caption="Your uploaded image 👆", use_column_width=True)
+    try:
+        img = Image.open(uploaded_file).convert('RGB')
+        st.image(img, caption="Your uploaded image 👆", use_column_width=True)
 
-    with st.spinner("Analyzing image..."):
-        # Preprocess image
-        img_resized = img.resize((180, 180))
-        img_array = np.array(img_resized) / 255.0
-        img_array = np.expand_dims(img_array, axis=0)
+        with st.spinner("Analyzing image..."):
+            # Preprocess
+            img_resized = img.resize((180, 180))
+            img_array = np.array(img_resized) / 255.0
+            img_array = np.expand_dims(img_array, axis=0)
 
-        # Predict
-        prediction = model.predict(img_array)
-        prob = prediction[0][0] if prediction.ndim == 2 else prediction[0]
-        label = "cat" if prob < 0.5 else "dog"
-        emoji = "🐱" if label == "cat" else "🐶"
+            # Predict
+            prediction = model.predict(img_array)
+            label = "cat" if prediction[0][0] < 0.5 else "dog"
+            emoji = "🐱" if label == "cat" else "🐶"
 
-        # Result
-        st.success(f"{emoji} It's a **{label.upper()}**!")
+            # Show result
+            st.success(f"{emoji} It's a **{label.upper()}**!")
 
-        # Play sound
-        try:
-            with open(f"{label}.mp3", "rb") as audio_file:
-                st.audio(audio_file.read(), format="audio/mp3")
-        except FileNotFoundError:
-            st.warning("🔇 Sound file not found.")
+            # Sound
+            sound_file = f"{label}.mp3"
+            if os.path.exists(sound_file):
+                with open(sound_file, "rb") as audio_file:
+                    st.audio(audio_file.read(), format="audio/mp3")
+            else:
+                st.warning(f"🔇 Sound file for {label} not found.")
 
-        # Fun fact
-        st.markdown(f"💡 **Did you know?** {random.choice(animal_facts[label])}")
+            # Fun fact
+            st.markdown(f"💡 **Did you know?** {random.choice(animal_facts[label])}")
+
+    except Exception as e:
+        st.error(f"Something went wrong: {e}")
 
 st.markdown("</div>", unsafe_allow_html=True)
-st.markdown('<div class="footer">🐾 Made with ❤️ by You</div>', unsafe_allow_html=True)
+st.markdown('<div class="footer">🐾 Made with ❤️ by Mennatullah Tarek </div>', unsafe_allow_html=True)
