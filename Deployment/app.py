@@ -1,8 +1,6 @@
 import streamlit as st
 import tensorflow as tf
 from tensorflow.keras.models import load_model
-from tensorflow.keras.applications import MobileNetV2
-from tensorflow.keras import layers, models
 import numpy as np
 from PIL import Image
 import requests
@@ -62,22 +60,36 @@ st.markdown("""
             font-size: 14px;
             margin-top: 40px;
         }
-        .container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
         .result-box {
-            background-color: #fff;
+            background-color: #ffffff;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
             text-align: center;
-            margin-top: 20px;
+        }
+        .play-btn {
+            background-color: #ff6f61;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .play-btn:hover {
+            background-color: #ff4e3b;
+        }
+        .upload-box {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
         }
     </style>
 """, unsafe_allow_html=True)
+
 st.markdown('<div class="main">', unsafe_allow_html=True)
 
 # UI Elements
@@ -100,25 +112,19 @@ if uploaded_file is not None:
         label = "cat" if prediction[0][0] < 0.5 else "dog"
         emoji = "🐱" if label == "cat" else "🐶"
 
-        # Result
-        st.markdown(f"<div class='result-box'>", unsafe_allow_html=True)
+        # Display Result
+        st.markdown('<div class="result-box">', unsafe_allow_html=True)
         st.success(f"{emoji} It's a **{label.upper()}**!")
-        
-        # Play sound automatically if the file exists
-        sound_path = f"Deployment/{label}.mp3"
-        if os.path.exists(sound_path):
-            audio_file = open(sound_path, "rb").read()
-            st.audio(audio_file, format="audio/mp3", start_time=0)
-            # JavaScript to auto play the sound
-            st.markdown("""
-                <script>
-                    var audio = new Audio(URL.createObjectURL(new Blob([audio_file])));
-                    audio.play();
-                </script>
-            """, unsafe_allow_html=True)
 
         # Fun fact
         st.markdown(f"💡 **Did you know?** {random.choice(animal_facts[label])}")
+
+        # Provide the "Play Sound" button
+        sound_path = f"Deployment/{label}.mp3"
+        if os.path.exists(sound_path):
+            if st.button("🔊 Play Sound"):
+                audio_file = open(sound_path, "rb").read()
+                st.audio(audio_file, format="audio/mp3", start_time=0)
         st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
