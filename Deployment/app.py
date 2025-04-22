@@ -68,10 +68,12 @@ if uploaded_file is not None:
         # Result
         st.success(f"{emoji} It's a **{label.upper()}**!")
 
-        # Play sound if the file exists
-        if os.path.exists(f"Deployment/{label}.mp3"):
-            with open(f"Deployment/{label}.mp3", "rb") as audio_file:
-                st.audio(audio_file.read(), format="audio/mp3")
+        # Play sound automatically if the file exists
+        sound_path = f"Deployment/{label}.mp3"
+        if os.path.exists(sound_path):
+            audio_file = open(sound_path, "rb").read()
+            # Use Streamlit's audio component to play automatically
+            st.audio(audio_file, format="audio/mp3", start_time=0)
 
         # Fun fact
         st.markdown(f"💡 **Did you know?** {random.choice(animal_facts[label])}")
