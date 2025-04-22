@@ -19,10 +19,15 @@ def download_model():
     else:
         st.error("Failed to download model.")
 
-# Load the model
-@st.cache_resource
+# Load the model and cache it for faster loading
+@st.cache_resource(show_spinner=True)
 def load_model_from_file():
-    return load_model("model.h5")
+    try:
+        model = load_model("model.h5")
+        return model
+    except Exception as e:
+        st.error(f"Failed to load model: {str(e)}")
+        return None
 
 # Download the model if not already present
 if not os.path.exists("model.h5"):
@@ -51,7 +56,7 @@ compliments = {
     "dog": ["You're pawsome!", "You're loyal like a good doggo!"]
 }
 
-# Custom CSS
+# Custom CSS for styling the UI
 st.markdown("""
     <style>
         .main {
@@ -92,6 +97,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# Layout of the app
 st.markdown('<div class="main">', unsafe_allow_html=True)
 
 st.title("🐾 Cat or Dog Classifier")
@@ -102,34 +108,44 @@ guess = st.radio("🤔 What do YOU think it is?", ["Not Sure", "Cat", "Dog"])
 
 uploaded_file = st.file_uploader("📤 Upload an image", type=["jpg", "jpeg", "png"])
 
+# Function to preprocess the image
+def preprocess_image(image):
+    img_resized = image.resize((180, 180))
+    img_array = np.array(img_resized) / 255.0
+    img_array = np.expand_dims(img_array, axis=0)
+    return img_array
+
+# Function to get model confidence
+def get_confidence(prediction):
+    confidence = max(prediction[0])
+    return confidence
+
 if uploaded_file is not None:
     img = Image.open(uploaded_file).convert('RGB')
     st.image(img, caption="Your uploaded image 👆", use_container_width=True)
 
-    # Show progress bar
+    # Show progress bar while analyzing the image
     with st.spinner("Analyzing image..."):
         for i in range(0, 101, 10):
             st.progress(i)
             time.sleep(0.05)
 
-        # Preprocess image
-        img_resized = img.resize((180, 180))
-        img_array = np.array(img_resized) / 255.0
-        img_array = np.expand_dims(img_array, axis=0)
-
+        img_array = preprocess_image(img)
         prediction = model.predict(img_array)
+        confidence = get_confidence(prediction)
+        
         label = "cat" if prediction[0][0] < 0.5 else "dog"
         emoji = "🐱" if label == "cat" else "🐶"
-
-        # Show result
+        
+        # Show the result in a styled box
         st.markdown('<div class="result-box">', unsafe_allow_html=True)
-        st.success(f"{emoji} It's a **{label.upper()}**!")
+        st.success(f"{emoji} It's a **{label.upper()}** with {confidence*100:.2f}% confidence!")
         st.markdown("</div>", unsafe_allow_html=True)
-
-        # Show gif
+        
+        # Show fun pet GIF based on the result
         gif_url = "https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" if label == "cat" else "https://media.giphy.com/media/3o6ZtaO9BZHcOjmErm/giphy.gif"
         st.image(gif_url, caption="Here's a happy pet for you!", use_column_width=True)
-
+        
         # Guess feedback
         if guess.lower() == label:
             st.balloons()
@@ -137,25 +153,22 @@ if uploaded_file is not None:
         elif guess != "Not Sure":
             st.warning(f"Oops! It was a **{label}**.")
 
-        # Compliment
+        # Compliment the user based on their guess
         st.info(random.choice(compliments[label]))
-
-        # Fun fact
+        
+        # Display a fun animal fact
         st.write(f"💡 **Did you know?** {random.choice(animal_facts[label])}")
 
-        # Sound
+        # Sound effect based on the animal's label
         sound_path = f"Deployment/{label}.mp3"
         if os.path.exists(sound_path):
             audio_file = open(sound_path, "rb").read()
-
-            # Auto-play on first prediction
             if "sound_played" not in st.session_state:
                 st.session_state.sound_played = True
                 st.audio(audio_file, format="audio/mp3", start_time=0)
-
-            # Option to replay
             if st.checkbox("🔊 Replay sound"):
                 st.audio(audio_file, format="audio/mp3", start_time=0)
 
+# Footer section
 st.markdown("</div>", unsafe_allow_html=True)
 st.markdown('<div class="footer">🐾 Made with ❤️ by MennatullahTarek </div>', unsafe_allow_html=True)
