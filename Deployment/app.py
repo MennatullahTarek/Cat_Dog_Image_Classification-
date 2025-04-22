@@ -106,7 +106,7 @@ uploaded_file = st.file_uploader("📤 Upload an image", type=["jpg", "jpeg", "p
 
 if uploaded_file is not None:
     img = Image.open(uploaded_file).convert('RGB')
-    st.image(img, caption="Your uploaded image 👆", use_column_width=True)
+    st.image(img, caption="Your uploaded image 👆", use_container_width=True)
 
     with st.spinner("Analyzing image..."):
         # Preprocess image for your model
