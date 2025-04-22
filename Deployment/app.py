@@ -1,16 +1,37 @@
 import streamlit as st
 import tensorflow as tf
 from tensorflow.keras.models import load_model
-from PIL import Image
+from tensorflow.keras.applications import MobileNetV2
+from tensorflow.keras import layers, models
 import numpy as np
+from PIL import Image
+import requests
+from io import BytesIO
 import random
 import os
 
-# Load model
+# Function to download the model from Google Drive
+def download_model():
+    file_url = "https://drive.google.com/uc?export=download&id=18RlTZvweyDneAUAVyMsgumENyBb5KHa-"
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        with open("model.h5", "wb") as file:
+            file.write(response.content)
+        st.success("Model downloaded successfully!")
+    else:
+        st.error("Failed to download model.")
+
+# Load the model
 @st.cache_resource
 def load_model_from_file():
     return load_model("model.h5")
 
+# Download the model if not already present
+if not os.path.exists("model.h5"):
+    st.info("Downloading model from Google Drive...")
+    download_model()
+
+# Load model
 model = load_model_from_file()
 
 # Fun facts
@@ -67,6 +88,8 @@ if uploaded_file is not None:
 
         # Result
         st.success(f"{emoji} It's a **{label.upper()}**!")
+
+
 
         # Play sound automatically if the file exists
         sound_path = f"Deployment/{label}.mp3"
