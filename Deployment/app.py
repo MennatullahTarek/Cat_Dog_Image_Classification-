@@ -146,10 +146,11 @@ if uploaded_file is not None:
         gif_url = "https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" if label == "cat" else "https://media.giphy.com/media/3o6ZtaO9BZHcOjmErm/giphy.gif"
         st.image(gif_url, caption="Here's a happy pet for you!", use_column_width=True)
         
-        # Guess feedback
+        # Guess feedback with animations and fun elements
         if guess.lower() == label:
             st.balloons()
             st.success("🎉 You guessed it right!")
+            st.snow()
         elif guess != "Not Sure":
             st.warning(f"Oops! It was a **{label}**.")
 
@@ -172,3 +173,4 @@ if uploaded_file is not None:
 # Footer section
 st.markdown("</div>", unsafe_allow_html=True)
 st.markdown('<div class="footer">🐾 Made with ❤️ by MennatullahTarek </div>', unsafe_allow_html=True)
+
