@@ -17,7 +17,7 @@ def download_model():
             file.write(response.content)
         st.success("Model downloaded successfully!")
     else:
-        st.error("Failed to download model.")
+        st.error("Failed to download model. Please try again later.")
 
 # Load the model and cache it for faster loading
 @st.cache_resource(show_spinner=True)
@@ -60,15 +60,15 @@ compliments = {
 st.markdown("""
     <style>
         .main {
-            background: linear-gradient(to right, #f0f4f8, #c3cfe2);
-            padding: 40px;
-            border-radius: 12px;
+            background: linear-gradient(to right, #e6f7ff, #c3cfe2);
+            padding: 50px;
+            border-radius: 15px;
             text-align: center;
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
         }
         .result-box {
             background-color: #ffffff;
-            padding: 30px;
+            padding: 40px;
             border-radius: 15px;
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
             margin-top: 30px;
@@ -76,7 +76,7 @@ st.markdown("""
         }
         .upload-box {
             background-color: #ffffff;
-            padding: 25px;
+            padding: 30px;
             border-radius: 15px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             margin-top: 30px;
@@ -91,9 +91,22 @@ st.markdown("""
                 transform: translateY(0);
             }
         }
-        #MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-        .css-1rs6os.edgvbvh3 {visibility: hidden;}
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 14px;
+            color: #666;
+        }
+        .paw {
+            font-size: 40px;
+            color: #ff6f61;
+            animation: paws 0.5s ease-in-out infinite;
+        }
+        @keyframes paws {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -101,12 +114,13 @@ st.markdown("""
 st.markdown('<div class="main">', unsafe_allow_html=True)
 
 st.title("🐾 Cat or Dog Classifier")
-st.markdown("Upload a picture, and let's find out if it's a **meow** or a **woof**! 🐶🐱")
+st.markdown("Upload an image, and let's determine if it's a **meow** or a **woof**! 🐶🐱")
 
 # User guess before uploading
 guess = st.radio("🤔 What do YOU think it is?", ["Not Sure", "Cat", "Dog"])
 
-uploaded_file = st.file_uploader("📤 Upload an image", type=["jpg", "jpeg", "png"])
+# File uploader with better instructions
+uploaded_file = st.file_uploader("📤 Upload an image", type=["jpg", "jpeg", "png"], label_visibility="collapsed")
 
 # Function to preprocess the image
 def preprocess_image(image):
@@ -137,18 +151,19 @@ if uploaded_file is not None:
         label = "cat" if prediction[0][0] < 0.5 else "dog"
         emoji = "🐱" if label == "cat" else "🐶"
         
-        # Show the result in a styled box
+        # Display the result in a professional styled box
         st.markdown('<div class="result-box">', unsafe_allow_html=True)
         st.success(f"{emoji} It's a **{label.upper()}** with {confidence*100:.2f}% confidence!")
         st.markdown("</div>", unsafe_allow_html=True)
         
-        # Show fun pet GIF based on the result
+        # Display fun pet GIF based on the result
         gif_url = "https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" if label == "cat" else "https://media.giphy.com/media/3o6ZtaO9BZHcOjmErm/giphy.gif"
-        st.image(gif_url, caption="Here's a happy pet for you!", use_column_width=True)
+        st.image(gif_url, caption="Here's a happy pet for you!", use_container_width=True)
         
-        # Guess feedback with animations and fun elements
+        # Guess feedback with smooth transitions and professional animations
         if guess.lower() == label:
-            st.balloons()
+            # Use paw prints animation instead of balloons
+            st.markdown('<div class="paw">🐾🐾🐾</div>', unsafe_allow_html=True)
             st.success("🎉 You guessed it right!")
             st.snow()
         elif guess != "Not Sure":
@@ -170,7 +185,6 @@ if uploaded_file is not None:
             if st.checkbox("🔊 Replay sound"):
                 st.audio(audio_file, format="audio/mp3", start_time=0)
 
-# Footer section
+# Footer section with a clean, professional look
 st.markdown("</div>", unsafe_allow_html=True)
-st.markdown('<div class="footer">🐾 Made with ❤️ by MennatullahTarek </div>', unsafe_allow_html=True)
-
+st.markdown('<footer>🐾 Made with ❤️ by MennatullahTarek </footer>', unsafe_allow_html=True)
