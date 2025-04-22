@@ -62,6 +62,20 @@ st.markdown("""
             font-size: 14px;
             margin-top: 40px;
         }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .result-box {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
 """, unsafe_allow_html=True)
 st.markdown('<div class="main">', unsafe_allow_html=True)
@@ -87,17 +101,25 @@ if uploaded_file is not None:
         emoji = "🐱" if label == "cat" else "🐶"
 
         # Result
+        st.markdown(f"<div class='result-box'>", unsafe_allow_html=True)
         st.success(f"{emoji} It's a **{label.upper()}**!")
-
-              # Play sound automatically if the file exists
+        
+        # Play sound automatically if the file exists
         sound_path = f"Deployment/{label}.mp3"
         if os.path.exists(sound_path):
             audio_file = open(sound_path, "rb").read()
-            # Use Streamlit's audio component to play automatically
             st.audio(audio_file, format="audio/mp3", start_time=0)
+            # JavaScript to auto play the sound
+            st.markdown("""
+                <script>
+                    var audio = new Audio(URL.createObjectURL(new Blob([audio_file])));
+                    audio.play();
+                </script>
+            """, unsafe_allow_html=True)
 
         # Fun fact
         st.markdown(f"💡 **Did you know?** {random.choice(animal_facts[label])}")
+        st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
 st.markdown('<div class="footer">🐾 Made with ❤️ by You</div>', unsafe_allow_html=True)
