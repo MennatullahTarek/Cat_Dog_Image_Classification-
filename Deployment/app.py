@@ -1,11 +1,11 @@
 import streamlit as st
 import tensorflow as tf
 from tensorflow.keras.models import load_model
-import numpy as np
 from PIL import Image
+import numpy as np
 import requests
-import random
 import os
+import random
 
 # Function to download the model from Google Drive
 def download_model():
@@ -45,20 +45,20 @@ animal_facts = {
     ]
 }
 
-# Custom CSS for animations and styling
+# Custom CSS for styling
 st.markdown("""
     <style>
         .main {
-            background-color: #fef6f0;
+            background: linear-gradient(to right, #f0f4f8, #c3cfe2);
             padding: 40px;
             border-radius: 12px;
             text-align: center;
-            animation: fadeIn 1.5s ease-in-out;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
         }
         .result-box {
             background-color: #ffffff;
             padding: 30px;
-            border-radius: 12px;
+            border-radius: 15px;
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
             margin-top: 30px;
             animation: fadeIn 1.5s ease-in-out;
@@ -66,13 +66,12 @@ st.markdown("""
         .upload-box {
             background-color: #ffffff;
             padding: 25px;
-            border-radius: 12px;
+            border-radius: 15px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             margin-top: 30px;
-            animation: bounceIn 1s ease-in-out;
         }
         .play-btn {
-            background-color: #ff6f61;
+            background-color: #FF8C00;
             color: white;
             padding: 12px 30px;
             border-radius: 5px;
@@ -80,13 +79,10 @@ st.markdown("""
             font-weight: bold;
             cursor: pointer;
             margin-top: 20px;
-            animation: slideIn 1s ease-in-out;
         }
         .play-btn:hover {
-            background-color: #ff4e3b;
+            background-color: #FF7F32;
         }
-
-        /* Animations */
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -95,28 +91,6 @@ st.markdown("""
             to {
                 opacity: 1;
                 transform: translateY(0);
-            }
-        }
-
-        @keyframes bounceIn {
-            from {
-                opacity: 0;
-                transform: translateY(-100px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(100px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
             }
         }
     </style>
@@ -144,20 +118,26 @@ if uploaded_file is not None:
         label = "cat" if prediction[0][0] < 0.5 else "dog"
         emoji = "🐱" if label == "cat" else "🐶"
 
-        # Display Result with Animation
+        # Result with animation
         st.markdown('<div class="result-box">', unsafe_allow_html=True)
         st.success(f"{emoji} It's a **{label.upper()}**!")
+        st.markdown("</div>", unsafe_allow_html=True)
 
-        # Fun fact
-        st.markdown(f"💡 **Did you know?** {random.choice(animal_facts[label])}")
-
-        # Play sound automatically after result is shown
+        # Play sound automatically if the file exists
         sound_path = f"Deployment/{label}.mp3"
         if os.path.exists(sound_path):
             audio_file = open(sound_path, "rb").read()
+            # Use Streamlit's audio component to play automatically
             st.audio(audio_file, format="audio/mp3", start_time=0)
 
-        st.markdown("</div>", unsafe_allow_html=True)
+        # Fun fact
+        st.write(f"💡 **Did you know?** {random.choice(animal_facts[label])}")
 
-# Footer
+    # Option to play sound manually
+    sound_toggle = st.checkbox("Play Sound After Prediction", value=True)
+    if sound_toggle:
+        st.audio(audio_file, format="audio/mp3", start_time=0)
+
+st.markdown("</div>", unsafe_allow_html=True)
 st.markdown('<div class="footer">🐾 Made with ❤️ by You</div>', unsafe_allow_html=True)
+
