@@ -46,19 +46,14 @@ animal_facts = {
     ]
 }
 
-# Custom CSS
+# Custom CSS for animations and styling
 st.markdown("""
     <style>
         .main {
             background-color: #fef6f0;
-            padding: 20px;
+            padding: 30px;
             border-radius: 12px;
-        }
-        .footer {
             text-align: center;
-            color: #999;
-            font-size: 14px;
-            margin-top: 40px;
         }
         .result-box {
             background-color: #ffffff;
@@ -67,6 +62,15 @@ st.markdown("""
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             margin-top: 30px;
             text-align: center;
+            animation: fadeIn 1s ease-in-out;
+        }
+        .upload-box {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+            animation: bounceIn 1s ease-in-out;
         }
         .play-btn {
             background-color: #ff6f61;
@@ -76,16 +80,45 @@ st.markdown("""
             border: none;
             font-weight: bold;
             cursor: pointer;
+            margin-top: 20px;
+            animation: slideIn 1s ease-in-out;
         }
         .play-btn:hover {
             background-color: #ff4e3b;
         }
-        .upload-box {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            margin-top: 30px;
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounceIn {
+            from {
+                opacity: 0;
+                transform: translateY(-100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
     </style>
 """, unsafe_allow_html=True)
@@ -112,20 +145,20 @@ if uploaded_file is not None:
         label = "cat" if prediction[0][0] < 0.5 else "dog"
         emoji = "🐱" if label == "cat" else "🐶"
 
-        # Display Result
+        # Display Result with Animation
         st.markdown('<div class="result-box">', unsafe_allow_html=True)
         st.success(f"{emoji} It's a **{label.upper()}**!")
 
         # Fun fact
         st.markdown(f"💡 **Did you know?** {random.choice(animal_facts[label])}")
 
-        # Provide the "Play Sound" button
+        # Play sound automatically if the file exists
         sound_path = f"Deployment/{label}.mp3"
         if os.path.exists(sound_path):
-            if st.button("🔊 Play Sound"):
-                audio_file = open(sound_path, "rb").read()
-                st.audio(audio_file, format="audio/mp3", start_time=0)
+            audio_file = open(sound_path, "rb").read()
+            st.audio(audio_file, format="audio/mp3", start_time=0)
+
         st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("</div>", unsafe_allow_html=True)
+# Footer
 st.markdown('<div class="footer">🐾 Made with ❤️ by You</div>', unsafe_allow_html=True)
