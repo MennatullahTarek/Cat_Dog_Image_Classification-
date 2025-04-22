@@ -67,6 +67,20 @@ if uploaded_file is not None:
         # Result
         st.success(f"{emoji} It's a **{label.upper()}**!")
 
+        # Play sound based on prediction
+        if label == "cat":
+            try:
+                with open("cat.mp3", "rb") as audio_file:
+                    st.audio(audio_file.read(), format="audio/mp3")
+            except FileNotFoundError:
+                st.warning("Sound file for cat is missing.")
+        elif label == "dog":
+            try:
+                with open("dog.mp3", "rb") as audio_file:
+                    st.audio(audio_file.read(), format="audio/mp3")
+            except FileNotFoundError:
+                st.warning("Sound file for dog is missing.")
+
         # Fun fact
         st.markdown(f"💡 **Did you know?** {random.choice(animal_facts[label])}")
 
