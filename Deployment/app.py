@@ -75,8 +75,9 @@ if uploaded_file is not None:
             # Use Streamlit's audio component to play automatically
             st.audio(audio_file, format="audio/mp3", start_time=0)
 
+
         # Fun fact
         st.markdown(f"💡 **Did you know?** {random.choice(animal_facts[label])}")
 
 st.markdown("</div>", unsafe_allow_html=True)
-st.markdown('<div class="footer">🐾 Made with ❤️ by MennatullahTarek </div>', unsafe_allow_html=True)
+st.markdown('<div class="footer">🐾 Made with ❤️ by You</div>', unsafe_allow_html=True)
