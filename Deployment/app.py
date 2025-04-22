@@ -1,106 +1,99 @@
+import gdown
 import streamlit as st
-import tensorflow as tf
 from tensorflow.keras.models import load_model
-from tensorflow.keras.applications import MobileNetV2
-from tensorflow.keras import layers, models
-import numpy as np
 from PIL import Image
-import requests
-from io import BytesIO
-import random
+import numpy as np
 import os
+import tensorflow as tf
 
-# Function to download the model from Google Drive
+# Download model from Google Drive
 def download_model():
-    file_url = "https://drive.google.com/uc?export=download&id=18RlTZvweyDneAUAVyMsgumENyBb5KHa-"
-    response = requests.get(file_url)
-    if response.status_code == 200:
-        with open("model.h5", "wb") as file:
-            file.write(response.content)
-        st.success("Model downloaded successfully!")
+    url = 'https://drive.google.com/uc?id=18RlTZvweyDneAUAVyMsgumENyBb5KHa-'
+    output = 'model.h5'
+    if not os.path.exists(output):
+        gdown.download(url, output, quiet=False)
+        st.write("Model downloaded successfully!")
     else:
-        st.error("Failed to download model.")
+        st.write("Model is already available!")
 
-# Load the model
-@st.cache_resource
+# Load model from file
 def load_model_from_file():
+    download_model()
     return load_model("model.h5")
 
-# Download the model if not already present
-if not os.path.exists("model.h5"):
-    st.info("Downloading model from Google Drive...")
-    download_model()
+# Function to make predictions
+def predict_image(model, img):
+    img_array = tf.convert_to_tensor(np.array(img))
+    img_array = tf.image.convert_image_dtype(img_array, dtype=tf.float32)
+    img_array = tf.expand_dims(img_array, axis=0)
+    prediction = model.predict(img_array)
+    return prediction
 
-# Load model
-model = load_model_from_file()
+# Streamlit UI Enhancement
+st.set_page_config(page_title="Cat vs Dog Classifier", layout="wide")
 
-# Fun facts
-animal_facts = {
-    "cat": [
-        "Cats sleep for 70% of their lives!",
-        "A group of kittens is called a kindle.",
-        "Cats can jump up to six times their length!"
-    ],
-    "dog": [
-        "Dogs' noses are wet to help absorb scent chemicals.",
-        "Dogs have about 1,700 taste buds.",
-        "A Greyhound could beat a Cheetah in a long-distance race!"
-    ]
-}
-
-# Custom CSS
+# Title and introduction
+st.title("🐱 Cat vs Dog Image Classification 🐶")
 st.markdown("""
-    <style>
-        .main {
-            background-color: #fef6f0;
-            padding: 20px;
-            border-radius: 12px;
-        }
-        .footer {
-            text-align: center;
-            color: #999;
-            font-size: 14px;
-            margin-top: 40px;
-        }
-    </style>
-""", unsafe_allow_html=True)
-st.markdown('<div class="main">', unsafe_allow_html=True)
+    This app classifies images of cats and dogs with the power of AI. 
+    Simply upload an image and watch the magic happen! Enjoy the sounds as well!
+""")
 
-# UI Elements
-st.title("🐾 Cat or Dog Classifier")
-st.markdown("Upload a picture, and let's find out if it's a **meow** or a **woof**! 🐶🐱")
+# File uploader
+uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "png", "jpeg"], label_visibility="collapsed")
 
-uploaded_file = st.file_uploader("📤 Upload an image", type=["jpg", "jpeg", "png"])
-
+# Conditional rendering based on file upload
 if uploaded_file is not None:
-    img = Image.open(uploaded_file).convert('RGB')
-    st.image(img, caption="Your uploaded image 👆", use_column_width=True)
+    img = Image.open(uploaded_file)
+    st.image(img, caption="Uploaded Image", use_column_width=True)
+    
+    # Load the model
+    model = load_model_from_file()
 
-    with st.spinner("Analyzing image..."):
-        # Preprocess image for your model
-        img_resized = img.resize((180, 180))
-        img_array = np.array(img_resized) / 255.0
-        img_array = np.expand_dims(img_array, axis=0)
+    # Prediction
+    prediction = predict_image(model, img)
 
-        prediction = model.predict(img_array)
-        label = "cat" if prediction[0][0] < 0.5 else "dog"
-        emoji = "🐱" if label == "cat" else "🐶"
+    # Display prediction with styling
+    st.markdown("<h2 style='color: #4CAF50;'>Prediction Result:</h2>", unsafe_allow_html=True)
+    if prediction[0] < 0.5:
+        st.write("The image is a **Cat** 🐱!")
+        st.audio("cat.mp3", format="audio/mp3", start_time=0)
+    else:
+        st.write("The image is a **Dog** 🐶!")
+        st.audio("dog.mp3", format="audio/mp3", start_time=0)
 
-        # Result
-        st.success(f"{emoji} It's a **{label.upper()}**!")
+    # Display prediction confidence
+    st.markdown(f"""
+        **Confidence:** {100 * (1 - prediction[0][0]):.2f}% **(Cat)** / **{100 * prediction[0][0]:.2f}%** **(Dog)**
+    """)
 
+    # Custom CSS for styling
+    st.markdown("""
+    <style>
+    .stButton>button {
+        background-color: #4CAF50;
+        color: white;
+        font-size: 20px;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    .stButton>button:hover {
+        background-color: #45a049;
+    }
+    .stImage img {
+        border-radius: 15px;
+        border: 2px solid #ddd;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
+    # Option to upload new image
+    st.markdown("<br><h3 style='color: #2196F3;'>Want to classify another image?</h3>", unsafe_allow_html=True)
+    st.button('Upload Another Image', on_click=None)
 
-        # Play sound automatically if the file exists
-        sound_path = f"Deployment/{label}.mp3"
-        if os.path.exists(sound_path):
-            audio_file = open(sound_path, "rb").read()
-            # Use Streamlit's audio component to play automatically
-            st.audio(audio_file, format="audio/mp3", start_time=0)
-
-
-        # Fun fact
-        st.markdown(f"💡 **Did you know?** {random.choice(animal_facts[label])}")
-
-st.markdown("</div>", unsafe_allow_html=True)
-st.markdown('<div class="footer">🐾 Made with ❤️ by You</div>', unsafe_allow_html=True)
+# Add a footer for additional engagement
+st.markdown("""
+    <br>
+    <hr>
+    <p style='color: #888;'>Built with ❤️ by MennatullahTarek. <a href='https://github.com/MennatullahTarek/Cat_Dog_Image_Classification-' target='_blank'>GitHub Repo</a></p>
+""", unsafe_allow_html=True)
