@@ -3,11 +3,11 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 from PIL import Image
 import numpy as np
-import requests
 import os
 import random
 import time
 from gtts import gTTS
+import base64
 
 # Function to download the model from Google Drive
 def download_model():
@@ -67,49 +67,51 @@ leaderboard = {
 st.markdown("""
     <style>
         body {
-            background: url('https://i.pinimg.com/originals/93/b9/3d/93b93de8cbef3c9ef988a75e14b6e65c.jpg') no-repeat center center fixed;
+            background: url('https://i.pinimg.com/originals/93/b9/3d/93b93de8cbef3c9ef988a75e14b6e65c.jpg');
             background-size: cover;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
         }
         .main {
             background: rgba(255, 255, 255, 0.85);
-            padding: 50px;
-            border-radius: 15px;
+            padding: 40px;
+            border-radius: 25px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            max-width: 900px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            max-width: 850px;
             margin: auto;
-            border: 3px solid #F1F1F1;
+            border: 4px dashed #f08;
         }
         .result-box {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-            animation: fadeIn 1.2s ease-in-out;
+            background-color: #fff0f5;
+            padding: 40px;
+            border-radius: 25px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+            margin-top: 30px;
+            animation: fadeIn 1.5s ease-in-out;
+            border: 3px dotted #ff69b4;
         }
         .upload-box {
-            background-color: #F9F9F9;
+            background-color: #fffaf0;
             padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
+            border-radius: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-top: 30px;
+            border: 3px dashed #add8e6;
         }
         footer {
             text-align: center;
-            margin-top: 40px;
+            margin-top: 50px;
             font-size: 14px;
             color: #444;
         }
         .paw {
-            font-size: 50px;
-            color: #FF6F61;
+            font-size: 40px;
+            color: #ff69b4;
             animation: paws 0.5s ease-in-out infinite;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(50px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {opacity: 0; transform: translateY(30px);}
+            to {opacity: 1; transform: translateY(0);}
         }
         @keyframes paws {
             0% { transform: translateY(0); }
@@ -121,12 +123,12 @@ st.markdown("""
 
 st.markdown('<div class="main">', unsafe_allow_html=True)
 
-st.title("🐾 Cat or Dog Classifier 🐾")
-st.markdown("Upload an image, and let's determine if it's a **meow** or a **woof**! 🐕🐈")
+st.title("\U0001F43E Cat or Dog Classifier")
+st.markdown("Upload an image, and let's determine if it's a **meow** or a **woof**! \U0001F436\U0001F431")
 
-guess = st.radio("🤔 What do YOU think it is?", ["Not Sure", "Cat", "Dog"])
+guess = st.radio("\U0001F914 What do YOU think it is?", ["Not Sure", "Cat", "Dog"])
 
-uploaded_file = st.file_uploader("📤 Upload an image", type=["jpg", "jpeg", "png"], label_visibility="collapsed")
+uploaded_file = st.file_uploader("\U0001F4E4 Upload an image", type=["jpg", "jpeg", "png"], label_visibility="collapsed")
 
 
 def preprocess_image(image):
@@ -139,19 +141,33 @@ def get_confidence(prediction):
     return max(prediction[0])
 
 def play_animal_sound(label):
-    sound_file = f"{label}.mp3"
-    with open(sound_file, "rb") as audio:
-        st.audio(audio.read(), format='audio/mp3')
+    # Sound effect based on the animal's label
+    sound_path = f"Deployment/{label}.mp3"
+    
+    if os.path.exists(sound_path):
+        audio_file = open(sound_path, "rb").read()
+        
+        if "sound_played" not in st.session_state:
+            st.session_state.sound_played = True
+            st.audio(audio_file, format="audio/mp3", start_time=0)
+        
+        # Replay the sound when checkbox is checked
+        if st.checkbox("🔊 Replay sound"):
+            st.audio(audio_file, format="audio/mp3", start_time=0)
+    else:
+        st.error(f"Sound file for {label} is not found. Please upload the file.")
 
-def speak_with_gtts(text):
+
+def speak(text):
     tts = gTTS(text)
     tts.save("response.mp3")
-    with open("response.mp3", "rb") as audio:
-        st.audio(audio.read(), format='audio/mp3')
+    with open("response.mp3", "rb") as audio_file:
+        st.audio(audio_file.read(), format='audio/mp3')
+
 
 if uploaded_file is not None:
     img = Image.open(uploaded_file).convert('RGB')
-    st.image(img, caption="Your uploaded image 👀", use_container_width=True)
+    st.image(img, caption="Your uploaded image \U0001F446", use_container_width=True)
 
     with st.spinner("Analyzing image..."):
         for i in range(0, 101, 10):
@@ -163,11 +179,11 @@ if uploaded_file is not None:
         confidence = get_confidence(prediction)
 
         label = "cat" if prediction[0][0] < 0.5 else "dog"
-        emoji = "🐱" if label == "cat" else "🐶"
+        emoji = "\U0001F431" if label == "cat" else "\U0001F436"
 
         st.markdown('<div class="result-box">', unsafe_allow_html=True)
         st.success(f"{emoji} It's a **{label.upper()}** with {confidence*100:.2f}% confidence!")
-        st.slider("Confidence Level", min_value=0.0, max_value=1.0, value=float(confidence), step=0.01, disabled=True)
+        st.slider("Confidence Level", min_value=0.0, max_value=1.0, value=float(confidence), step=0.01)
         st.markdown("</div>", unsafe_allow_html=True)
 
         gif_url = "https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" if label == "cat" else "https://media.giphy.com/media/3o6ZtaO9BZHcOjmErm/giphy.gif"
@@ -175,25 +191,23 @@ if uploaded_file is not None:
 
         if guess.lower() == label:
             leaderboard["Correct Guesses"] += 1
-            st.markdown('<div class="paw">🐾🐾🐾</div>', unsafe_allow_html=True)
-            st.success("🎉 You guessed it right!")
+            st.markdown('<div class="paw">\U0001F43E\U0001F43E\U0001F43E</div>', unsafe_allow_html=True)
+            st.success("\U0001F389 You guessed it right!")
             st.snow()
         elif guess != "Not Sure":
             leaderboard["Wrong Guesses"] += 1
             st.warning(f"Oops! It was a **{label}**.")
 
         st.info(random.choice(compliments[label]))
-        st.write(f"💡 **Did you know?** {random.choice(animal_facts[label])}")
+        st.write(f"\U0001F4A1 **Did you know?** {random.choice(animal_facts[label])}")
 
-        # Play animal sound or text-to-speech based on button clicks
-        if st.button("Play Animal Sound"):
+        # Play animal sound or text-to-speech based on label
+        if st.button(f"🔊 Play {label.capitalize()} Sound"):
             play_animal_sound(label)
-
-        if st.button("Play Text-to-Speech"):
-            speak_with_gtts(f"It's a {label} with {confidence * 100:.2f} percent confidence!")
+        speak(f"It's a {label} with {confidence * 100:.2f} percent confidence!")
 
 st.markdown("## Leaderboard")
 st.table(leaderboard)
 
 st.markdown("</div>", unsafe_allow_html=True)
-st.markdown('<footer>🐾 Made with ❤️ by MennatullahTarek </footer>', unsafe_allow_html=True)
+st.markdown('<footer>\U0001F43E Made with ❤️ by MennatullahTarek </footer>', unsafe_allow_html=True)
