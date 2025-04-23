@@ -9,10 +9,11 @@ import random
 import time
 
 # Function to download the model from Google Drive
+
 def download_model():
     file_url = "https://drive.google.com/uc?export=download&id=18RlTZvweyDneAUAVyMsgumENyBb5KHa-"
     response = requests.get(file_url)
-    if response.status_code == 200:
+    if response.status_code == 200 and response.headers["Content-Type"] != "text/html; charset=UTF-8":
         with open("model.h5", "wb") as file:
             file.write(response.content)
         if os.path.getsize("model.h5") == 0:
@@ -21,11 +22,14 @@ def download_model():
         else:
             st.success("Model downloaded successfully!")
     else:
-        st.error("Failed to download model. Please try again later.")
+        st.error("Failed to download model. Please check the file link.")
 
 # Load the model and cache it
 @st.cache_resource(show_spinner=True)
 def load_model_from_file():
+    if not os.path.exists("model.h5") or os.path.getsize("model.h5") == 0:
+        st.warning("Model file not found or is empty. Attempting to download again.")
+        download_model()
     try:
         model = load_model("model.h5")
         return model
