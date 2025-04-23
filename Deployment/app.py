@@ -1,118 +1,115 @@
 import streamlit as st
-import tensorflow as tf
 from tensorflow.keras.models import load_model
 from PIL import Image
 import numpy as np
 import os
-import time
-from gtts import gTTS
 import requests
+import random
+from gtts import gTTS
+import time
+import plotly.express as px
 
-# ----------------------------- Configuration -----------------------------
-st.set_page_config(page_title="Cat vs Dog Classifier", page_icon="🐾", layout="centered")
+# ========== Sidebar ========== #
+st.set_page_config(page_title="Cat vs Dog Classifier", layout="wide")
+st.sidebar.title("🐾 Navigation")
+page = st.sidebar.radio("Go to", ["Home", "About", "How It Works"])
 
-# ----------------------------- Static Content -----------------------------
-animal_facts = {
-    "cat": [
-        "Cats sleep for 70% of their lives!",
-        "A group of kittens is called a kindle.",
-        "Cats can jump up to six times their length!"
-    ],
-    "dog": [
-        "Dogs' noses are wet to help absorb scent chemicals.",
-        "Dogs have about 1,700 taste buds.",
-        "A Greyhound could beat a Cheetah in a long-distance race!"
-    ]
-}
-
-# ----------------------------- Download & Load Model -----------------------------
-MODEL_PATH = "model.h5"
-MODEL_FILE_ID = "18RlTZvweyDneAUAVyMsgumENyBb5KHa-"
-
-@st.cache_resource(show_spinner=True)
-def load_model_from_file():
-    if not os.path.exists(MODEL_PATH):
-        st.info("Downloading model from Google Drive...")
-        url = f"https://drive.google.com/uc?export=download&id={MODEL_FILE_ID}"
-        r = requests.get(url)
-        with open(MODEL_PATH, "wb") as f:
-            f.write(r.content)
-    return load_model(MODEL_PATH)
-
-model = load_model_from_file()
-
-# ----------------------------- Helper Functions -----------------------------
-def preprocess_image(image):
-    img_resized = image.resize((180, 180))
-    img_array = np.array(img_resized) / 255.0
-    return np.expand_dims(img_array, axis=0)
-
-def play_animal_sound(label):
-    sound_file = f"Deployment/{label}.mp3"
-    if os.path.exists(sound_file):
-        with open(sound_file, "rb") as audio_file:
-            st.audio(audio_file.read(), format="audio/mp3")
-    else:
-        st.warning(f"Sound file for {label} not found.")
-
-def speak_text(text):
-    tts = gTTS(text)
-    tts.save("response.mp3")
-    with open("response.mp3", "rb") as audio_file:
-        st.audio(audio_file.read(), format='audio/mp3')
-
-# ----------------------------- UI -----------------------------
+# ========== Styling ========== #
 st.markdown("""
     <style>
-    .main-title { font-size: 36px; font-weight: bold; color: #4a4a4a; text-align: center; }
-    .sub-title { font-size: 18px; color: #6c6c6c; text-align: center; margin-bottom: 30px; }
-    .footer { text-align: center; margin-top: 30px; font-size: 14px; color: #aaa; }
+        .main {
+            max-width: 1000px;
+            margin: auto;
+            padding: 2rem;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .title {
+            font-size: 2.5rem;
+            text-align: center;
+            color: #4e4e4e;
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            color: #888;
+            text-align: center;
+        }
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<div class='main-title'>🐾 Cat vs Dog Classifier</div>", unsafe_allow_html=True)
-st.markdown("<div class='sub-title'>Upload an image and let's see who's in it: a meow or a woof!</div>", unsafe_allow_html=True)
+# ========== Download and Load Model ========== #
+@st.cache_resource
+def download_and_load_model():
+    model_path = "model.h5"
+    if not os.path.exists(model_path):
+        file_id = "18RlTZvweyDneAUAVyMsgumENyBb5KHa-"
+        url = f"https://drive.google.com/uc?export=download&id={file_id}"
+        response = requests.get(url)
+        with open(model_path, "wb") as f:
+            f.write(response.content)
+    return load_model(model_path)
 
-# ----------------------------- Upload and Predict -----------------------------
-uploaded_file = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
+model = download_and_load_model()
 
-if uploaded_file:
-    image = Image.open(uploaded_file).convert("RGB")
-    st.image(image, caption="Your uploaded image", use_container_width=True)
+# ========== Helper Functions ========== #
+def preprocess(img):
+    image = img.resize((180, 180))
+    array = np.expand_dims(np.array(image) / 255.0, axis=0)
+    return array
 
-    with st.spinner("Analyzing image..."):
-        time.sleep(0.5)
-        processed_img = preprocess_image(image)
-        prediction = model.predict(processed_img)
-        confidence = float(np.max(prediction))
-        label = "dog" if prediction[0][0] > 0.5 else "cat"
-        emoji = "🐶" if label == "dog" else "🐱"
+def predict_label(image):
+    pred = model.predict(preprocess(image))
+    return ("cat" if pred[0][0] < 0.5 else "dog", max(pred[0]))
 
-    st.success(f"{emoji} It's a **{label.upper()}** with {confidence*100:.2f}% confidence!")
-    st.progress(confidence)
+def speak(text):
+    tts = gTTS(text)
+    tts.save("tts.mp3")
+    st.audio("tts.mp3")
 
-    if st.button(f"Play {label.capitalize()} Sound 🔊"):
-        play_animal_sound(label)
+def plot_confidence(conf):
+    fig = px.bar(x=["Confidence"], y=[conf * 100], range_y=[0, 100], text=[f"{conf*100:.2f}%"])
+    fig.update_traces(textposition="outside", marker_color="#fd7e14")
+    fig.update_layout(title="Model Confidence", yaxis_title="%", showlegend=False)
+    st.plotly_chart(fig, use_container_width=True)
 
-    st.info(f"**Fun Fact:** {np.random.choice(animal_facts[label])}")
-    speak_text(f"It's a {label} with {confidence * 100:.2f} percent confidence")
+# ========== Home Page ========== #
+if page == "Home":
+    st.markdown('<div class="main">', unsafe_allow_html=True)
+    st.markdown('<div class="title">🐶🐱 Cat vs Dog Classifier</div>', unsafe_allow_html=True)
+    st.markdown('<div class="subtitle">Upload an image and let AI guess!</div>', unsafe_allow_html=True)
+    st.write("---")
 
-# ----------------------------- How it works -----------------------------
-st.markdown("---")
-st.header("How It Works")
-st.markdown("""
-1. Upload a clear image of a **cat** or **dog**.
-2. The model resizes and preprocesses the image.
-3. It uses a neural network to predict whether it's a cat or dog.
-4. You get the result along with a fun fact and sound!
-""")
+    uploaded = st.file_uploader("Upload an image", type=["png", "jpg", "jpeg"])
+    guess = st.radio("What do **you** think it is?", ["Not Sure", "Cat", "Dog"])
 
-# Try to show how-it-works image if available
-how_img_path = "Deployment/how-it-works.png"
-if os.path.exists(how_img_path):
-    st.image(how_img_path, caption="The Prediction Flow", use_container_width=True)
-else:
-    st.warning("How-it-works image not found.")
+    if uploaded:
+        img = Image.open(uploaded).convert("RGB")
+        st.image(img, caption="Uploaded Image", use_container_width=True)
 
-# ----------------------------- Footer -----------------------------
-st.markdown("<div class='footer'>🐾 Made with love by Mennatullah Tarek</div>", unsafe_allow_html=True)
+        with st.spinner("Analyzing..."):
+            label, conf = predict_label(img)
+
+        emoji = "🐱" if label == "cat" else "🐶"
+        st.success(f"{emoji} It's a **{label.upper()}** with {conf*100:.2f}% confidence!")
+        plot_confidence(conf)
+
+        # Speech Output
+        if st.toggle("🔈 Hear it"):
+            speak(f"It's a {label} with {conf*100:.2f} percent confidence.")
+
+# ========== About Page ========== #
+elif page == "About":
+    st.markdown("## About This App")
+    st.write("This project uses a Convolutional Neural Network trained to distinguish between cat and dog images.")
+    st.write("Developed with ❤️ by MennatullahTarek.")
+
+# ========== How It Works Page ========== #
+elif page == "How It Works":
+    st.markdown("## How It Works")
+    st.write("""
+    - The image is resized to 180x180 pixels.
+    - It is normalized and passed through a CNN model.
+    - The model outputs a probability, and we map it to `cat` or `dog` using a 0.5 threshold.
+    """)
+    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Convolutional_Neural_Network_Schema.png/800px-Convolutional_Neural_Network_Schema.png", caption="CNN Flow (Source: Wikipedia)")
+
+st.markdown("</div>", unsafe_allow_html=True)
