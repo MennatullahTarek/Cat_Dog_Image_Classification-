@@ -68,51 +68,49 @@ leaderboard = {
 st.markdown("""
     <style>
         body {
-            background: url('https://i.pinimg.com/originals/93/b9/3d/93b93de8cbef3c9ef988a75e14b6e65c.jpg');
+            background: url('https://i.pinimg.com/originals/93/b9/3d/93b93de8cbef3c9ef988a75e14b6e65c.jpg') no-repeat center center fixed;
             background-size: cover;
-            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-family: 'Arial', sans-serif;
         }
         .main {
             background: rgba(255, 255, 255, 0.85);
-            padding: 40px;
-            border-radius: 25px;
+            padding: 50px;
+            border-radius: 15px;
             text-align: center;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-            max-width: 850px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            max-width: 900px;
             margin: auto;
-            border: 4px dashed #f08;
+            border: 3px solid #F1F1F1;
         }
         .result-box {
-            background-color: #fff0f5;
-            padding: 40px;
-            border-radius: 25px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-            margin-top: 30px;
-            animation: fadeIn 1.5s ease-in-out;
-            border: 3px dotted #ff69b4;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            animation: fadeIn 1.2s ease-in-out;
         }
         .upload-box {
-            background-color: #fffaf0;
+            background-color: #F9F9F9;
             padding: 30px;
-            border-radius: 25px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            margin-top: 30px;
-            border: 3px dashed #add8e6;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
         }
         footer {
             text-align: center;
-            margin-top: 50px;
+            margin-top: 40px;
             font-size: 14px;
             color: #444;
         }
         .paw {
-            font-size: 40px;
-            color: #ff69b4;
+            font-size: 50px;
+            color: #FF6F61;
             animation: paws 0.5s ease-in-out infinite;
         }
         @keyframes fadeIn {
-            from {opacity: 0; transform: translateY(30px);}
-            to {opacity: 1; transform: translateY(0);}
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         @keyframes paws {
             0% { transform: translateY(0); }
@@ -124,12 +122,12 @@ st.markdown("""
 
 st.markdown('<div class="main">', unsafe_allow_html=True)
 
-st.title("\U0001F43E Cat or Dog Classifier")
-st.markdown("Upload an image, and let's determine if it's a **meow** or a **woof**! \U0001F436\U0001F431")
+st.title("🐾 Cat or Dog Classifier 🐾")
+st.markdown("Upload an image, and let's determine if it's a **meow** or a **woof**! 🐕🐈")
 
-guess = st.radio("\U0001F914 What do YOU think it is?", ["Not Sure", "Cat", "Dog"])
+guess = st.radio("🤔 What do YOU think it is?", ["Not Sure", "Cat", "Dog"])
 
-uploaded_file = st.file_uploader("\U0001F4E4 Upload an image", type=["jpg", "jpeg", "png"], label_visibility="collapsed")
+uploaded_file = st.file_uploader("📤 Upload an image", type=["jpg", "jpeg", "png"], label_visibility="collapsed")
 
 
 def preprocess_image(image):
@@ -142,14 +140,14 @@ def get_confidence(prediction):
     return max(prediction[0])
 
 def speak(text):
-    tts = gTTS(text)
+    tts = gTTS(text, lang='en')
     tts.save("response.mp3")
     with open("response.mp3", "rb") as audio_file:
         st.audio(audio_file.read(), format='audio/mp3')
 
 if uploaded_file is not None:
     img = Image.open(uploaded_file).convert('RGB')
-    st.image(img, caption="Your uploaded image \U0001F446", use_container_width=True)
+    st.image(img, caption="Your uploaded image 👀", use_container_width=True)
 
     with st.spinner("Analyzing image..."):
         for i in range(0, 101, 10):
@@ -161,11 +159,11 @@ if uploaded_file is not None:
         confidence = get_confidence(prediction)
 
         label = "cat" if prediction[0][0] < 0.5 else "dog"
-        emoji = "\U0001F431" if label == "cat" else "\U0001F436"
+        emoji = "🐱" if label == "cat" else "🐶"
 
         st.markdown('<div class="result-box">', unsafe_allow_html=True)
         st.success(f"{emoji} It's a **{label.upper()}** with {confidence*100:.2f}% confidence!")
-        st.slider("Confidence Level", min_value=0.0, max_value=1.0, value=float(confidence), step=0.01)
+        st.slider("Confidence Level", min_value=0.0, max_value=1.0, value=float(confidence), step=0.01, disabled=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
         gif_url = "https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" if label == "cat" else "https://media.giphy.com/media/3o6ZtaO9BZHcOjmErm/giphy.gif"
@@ -173,15 +171,15 @@ if uploaded_file is not None:
 
         if guess.lower() == label:
             leaderboard["Correct Guesses"] += 1
-            st.markdown('<div class="paw">\U0001F43E\U0001F43E\U0001F43E</div>', unsafe_allow_html=True)
-            st.success("\U0001F389 You guessed it right!")
+            st.markdown('<div class="paw">🐾🐾🐾</div>', unsafe_allow_html=True)
+            st.success("🎉 You guessed it right!")
             st.snow()
         elif guess != "Not Sure":
             leaderboard["Wrong Guesses"] += 1
             st.warning(f"Oops! It was a **{label}**.")
 
         st.info(random.choice(compliments[label]))
-        st.write(f"\U0001F4A1 **Did you know?** {random.choice(animal_facts[label])}")
+        st.write(f"💡 **Did you know?** {random.choice(animal_facts[label])}")
 
         speak(f"It's a {label} with {confidence * 100:.2f} percent confidence!")
 
@@ -189,4 +187,4 @@ st.markdown("## Leaderboard")
 st.table(leaderboard)
 
 st.markdown("</div>", unsafe_allow_html=True)
-st.markdown('<footer>\U0001F43E Made with ❤️ by MennatullahTarek </footer>', unsafe_allow_html=True)
+st.markdown('<footer>🐾 Made with ❤️ by MennatullahTarek </footer>', unsafe_allow_html=True)
