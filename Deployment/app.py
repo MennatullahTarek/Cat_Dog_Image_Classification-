@@ -15,7 +15,11 @@ def download_model():
     if response.status_code == 200:
         with open("model.h5", "wb") as file:
             file.write(response.content)
-        st.success("Model downloaded successfully!")
+        if os.path.getsize("model.h5") == 0:
+            os.remove("model.h5")
+            st.error("Downloaded model file is empty.")
+        else:
+            st.success("Model downloaded successfully!")
     else:
         st.error("Failed to download model. Please try again later.")
 
@@ -55,52 +59,54 @@ compliments = {
     "dog": ["You're pawsome!", "You're loyal like a good doggo!"]
 }
 
-# Custom CSS for styling
+# Custom CSS for cartoon theme styling
 st.markdown("""
     <style>
+        body {
+            background: url('https://i.pinimg.com/originals/93/b9/3d/93b93de8cbef3c9ef988a75e14b6e65c.jpg');
+            background-size: cover;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
         .main {
-            background: linear-gradient(to right, #f0f4f8, #c3cfe2);
+            background: rgba(255, 255, 255, 0.85);
             padding: 40px;
-            border-radius: 15px;
+            border-radius: 25px;
             text-align: center;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            max-width: 800px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            max-width: 850px;
             margin: auto;
+            border: 4px dashed #f08;
         }
         .result-box {
-            background-color: #ffffff;
+            background-color: #fff0f5;
             padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 25px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
             margin-top: 30px;
             animation: fadeIn 1.5s ease-in-out;
+            border: 3px dotted #ff69b4;
         }
         .upload-box {
-            background-color: #ffffff;
+            background-color: #fffaf0;
             padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             margin-top: 30px;
+            border: 3px dashed #add8e6;
         }
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from {opacity: 0; transform: translateY(30px);}
+            to {opacity: 1; transform: translateY(0);}
         }
         footer {
             text-align: center;
             margin-top: 50px;
             font-size: 14px;
-            color: #666;
+            color: #444;
         }
         .paw {
             font-size: 40px;
-            color: #ff6f61;
+            color: #ff69b4;
             animation: paws 0.5s ease-in-out infinite;
         }
         @keyframes paws {
