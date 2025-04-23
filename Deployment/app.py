@@ -10,14 +10,17 @@ import time
 
 # Function to download the model from Google Drive
 def download_model():
-    file_url = "https://drive.google.com/uc?export=download&id=18RlTZvweyDneAUAVyMsgumENyBb5KHa-"
-    response = requests.get(file_url)
-    if response.status_code == 200:
-        with open("model.h5", "wb") as file:
-            file.write(response.content)
-        st.success("Model downloaded successfully!")
-    else:
-        st.error("Failed to download model. Please try again later.")
+    try:
+        file_url = "https://drive.google.com/uc?export=download&id=18RlTZvweyDneAUAVyMsgumENyBb5KHa-"
+        response = requests.get(file_url)
+        if response.status_code == 200 and response.content.startswith(b'\x89HDF'):
+            with open("model.h5", "wb") as file:
+                file.write(response.content)
+            st.success("✅ Model downloaded successfully!")
+        else:
+            st.error("❌ Downloaded file is not a valid model. Please check the link or the file.")
+    except Exception as e:
+        st.error(f"⚠️ Error downloading the model: {str(e)}")
 
 # Load the model and cache it
 @st.cache_resource(show_spinner=True)
@@ -26,15 +29,18 @@ def load_model_from_file():
         model = load_model("model.h5")
         return model
     except Exception as e:
-        st.error(f"Failed to load model: {str(e)}")
+        st.error(f"❌ Failed to load model: {str(e)}")
         return None
 
+# Download the model if not already present
 if not os.path.exists("model.h5"):
-    st.info("Downloading model from Google Drive...")
+    st.info("📥 Downloading model from Google Drive...")
     download_model()
 
+# Load model
 model = load_model_from_file()
 
+# Fun facts and compliments
 animal_facts = {
     "cat": [
         "Cats sleep for 70% of their lives!",
@@ -53,7 +59,7 @@ compliments = {
     "dog": ["You're pawsome!", "You're loyal like a good doggo!"]
 }
 
-# Custom CSS
+# Custom CSS for UI styling
 st.markdown("""
     <style>
         .main {
@@ -80,55 +86,67 @@ st.markdown("""
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             margin-top: 30px;
         }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 14px;
+            color: #666;
+        }
         .paw {
             font-size: 40px;
             color: #ff6f61;
             animation: paws 0.5s ease-in-out infinite;
         }
-        .try-again {
-            background-color: #f97f51;
-            color: white;
-            padding: 12px 25px;
-            border-radius: 10px;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        .try-again:hover {
-            transform: scale(1.1);
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes paws {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
         }
     </style>
 """, unsafe_allow_html=True)
 
-# App layout
+# Layout
 st.markdown('<div class="main">', unsafe_allow_html=True)
 st.title("🐾 Cat or Dog Classifier")
 st.markdown("Upload an image, and let's determine if it's a **meow** or a **woof**! 🐶🐱")
 
+# Guess input
 guess = st.radio("🤔 What do YOU think it is?", ["Not Sure", "Cat", "Dog"])
+
+# Upload image
 uploaded_file = st.file_uploader("📤 Upload an image", type=["jpg", "jpeg", "png"], label_visibility="collapsed")
 
+# Preprocess image
 def preprocess_image(image):
     img_resized = image.resize((180, 180))
     img_array = np.array(img_resized) / 255.0
     img_array = np.expand_dims(img_array, axis=0)
     return img_array
 
+# Get confidence
 def get_confidence(prediction):
     return max(prediction[0])
 
+# If image uploaded
 if uploaded_file is not None:
     img = Image.open(uploaded_file).convert('RGB')
     st.image(img, caption="Your uploaded image 👆", use_container_width=True)
 
+    # Simulate progress
     with st.spinner("Analyzing image..."):
-        st.image("https://media.giphy.com/media/mlvseq9yvZhba/giphy.gif", width=100)
-        time.sleep(1)
+        for i in range(0, 101, 10):
+            st.progress(i)
+            time.sleep(0.05)
 
         img_array = preprocess_image(img)
         prediction = model.predict(img_array)
@@ -157,10 +175,12 @@ if uploaded_file is not None:
         sound_path = f"Deployment/{label}.mp3"
         if os.path.exists(sound_path):
             audio_file = open(sound_path, "rb").read()
-            st.audio(audio_file, format="audio/mp3", start_time=0)
+            if "sound_played" not in st.session_state:
+                st.session_state.sound_played = True
+                st.audio(audio_file, format="audio/mp3", start_time=0)
+            if st.checkbox("🔊 Replay sound"):
+                st.audio(audio_file, format="audio/mp3", start_time=0)
 
-        if st.button("🔁 Try with another image", key="try_again", help="Try again with a different image"):
-            st.experimental_rerun()
-
+# Footer
 st.markdown("</div>", unsafe_allow_html=True)
 st.markdown('<footer>🐾 Made with ❤️ by MennatullahTarek</footer>', unsafe_allow_html=True)
