@@ -8,7 +8,6 @@ import os
 import random
 import time
 from gtts import gTTS
-import base64
 
 # Function to download the model from Google Drive
 def download_model():
@@ -139,11 +138,16 @@ def preprocess_image(image):
 def get_confidence(prediction):
     return max(prediction[0])
 
-def speak(text):
-    tts = gTTS(text, lang='en')
+def play_animal_sound(label):
+    sound_file = f"{label}.mp3"
+    with open(sound_file, "rb") as audio:
+        st.audio(audio.read(), format='audio/mp3')
+
+def speak_with_gtts(text):
+    tts = gTTS(text)
     tts.save("response.mp3")
-    with open("response.mp3", "rb") as audio_file:
-        st.audio(audio_file.read(), format='audio/mp3')
+    with open("response.mp3", "rb") as audio:
+        st.audio(audio.read(), format='audio/mp3')
 
 if uploaded_file is not None:
     img = Image.open(uploaded_file).convert('RGB')
@@ -181,7 +185,12 @@ if uploaded_file is not None:
         st.info(random.choice(compliments[label]))
         st.write(f"💡 **Did you know?** {random.choice(animal_facts[label])}")
 
-        speak(f"It's a {label} with {confidence * 100:.2f} percent confidence!")
+        # Play animal sound or text-to-speech based on button clicks
+        if st.button("Play Animal Sound"):
+            play_animal_sound(label)
+
+        if st.button("Play Text-to-Speech"):
+            speak_with_gtts(f"It's a {label} with {confidence * 100:.2f} percent confidence!")
 
 st.markdown("## Leaderboard")
 st.table(leaderboard)
