@@ -9,163 +9,125 @@ import time
 from gtts import gTTS
 import requests
 
-# ========== Function to download the model from Google Drive ==========
+# -------------- Page Config --------------
+st.set_page_config(page_title="Cat vs Dog Classifier", page_icon="🐾", layout="centered")
+
+# -------------- Custom Styles --------------
+st.markdown("""
+    <style>
+    .main {background-color: #fefeff;}
+    .block-container {padding-top: 2rem;}
+    footer {visibility: hidden;}
+    </style>
+""", unsafe_allow_html=True)
+
+# -------------- Download Model --------------
 def download_model():
     file_id = "18RlTZvweyDneAUAVyMsgumENyBb5KHa-"
-    file_url = f"https://drive.google.com/uc?export=download&id={file_id}"
-    response = requests.get(file_url)
-
-    if response.status_code == 200:
-        with open("model.h5", "wb") as file:
-            file.write(response.content)
-        if os.path.getsize("model.h5") == 0:
-            os.remove("model.h5")
-            st.error("Downloaded model file is empty.")
-        else:
-            st.success("Model downloaded successfully!")
+    url = f"https://drive.google.com/uc?export=download&id={file_id}"
+    response = requests.get(url)
+    if response.ok:
+        with open("model.h5", "wb") as f:
+            f.write(response.content)
+        st.success("Model downloaded!")
     else:
-        st.error("Failed to download model. Please try again later.")
+        st.error("Failed to download model.")
 
-# ========== Load the model and cache it ==========
 @st.cache_resource(show_spinner=True)
 def load_model_from_file():
     try:
-        model = load_model("model.h5")
-        return model
+        return load_model("model.h5")
     except Exception as e:
-        st.error(f"Failed to load model: {str(e)}")
+        st.error(f"Model load error: {e}")
         return None
 
 if not os.path.exists("model.h5"):
-    st.info("Downloading model from Google Drive...")
+    st.info("Downloading model...")
     download_model()
 
 model = load_model_from_file()
 if model is None:
     st.stop()
 
-# ========== Static Data ==========
-animal_facts = {
-    "cat": [
-        "Cats sleep for 70% of their lives!",
-        "A group of kittens is called a kindle.",
-        "Cats can jump up to six times their length!"
-    ],
-    "dog": [
-        "Dogs' noses are wet to help absorb scent chemicals.",
-        "Dogs have about 1,700 taste buds.",
-        "A Greyhound could beat a Cheetah in a long-distance race!"
-    ]
+# -------------- Static Data --------------
+facts = {
+    "cat": ["Cats sleep 70% of their lives!", "A group of kittens is a kindle."],
+    "dog": ["Dogs' noses are wet to help scent!", "Dogs have 1,700 taste buds!"]
 }
-
 compliments = {
     "cat": ["You're as curious as a cat!", "Purrfect guess!"],
     "dog": ["You're pawsome!", "You're loyal like a good doggo!"]
 }
+score = {"Correct": 0, "Incorrect": 0}
 
-leaderboard = {
-    "Correct Guesses": 0,
-    "Wrong Guesses": 0
-}
+# -------------- UI --------------
+st.title("🐾 Cat or Dog Classifier")
+st.markdown("Upload an image, and we'll tell you if it's a **Cat** or a **Dog**!")
 
-# ========== UI and CSS ==========
-st.markdown("""
-    <style>
-        body {
-            background-color: #fef6ff;
-        }
-        .main {
-            background: #fffaf0;
-            padding: 40px;
-            border-radius: 25px;
-            text-align: center;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-            max-width: 850px;
-            margin: auto;
-            border: 4px dashed #f08;
-            font-family: 'Comic Sans MS', cursive, sans-serif;
-        }
-        footer {
-            margin-top: 40px;
-            font-size: 16px;
-            color: #999;
-            text-align: center;
-        }
-    </style>
-""", unsafe_allow_html=True)
+guess = st.radio("Your Guess:", ["Not Sure", "Cat", "Dog"])
+image_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
 
-st.markdown('<div class="main">', unsafe_allow_html=True)
-
-st.title("\U0001F43E Cat or Dog Classifier")
-st.markdown("Upload an image, and let's determine if it's a **meow** or a **woof**! \U0001F436\U0001F431")
-
-guess = st.radio("\U0001F914 What do YOU think it is?", ["Not Sure", "Cat", "Dog"])
-
-uploaded_file = st.file_uploader("\U0001F4E4 Upload an image", type=["jpg", "jpeg", "png"], label_visibility="collapsed")
-
-# ========== Helper Functions ==========
+# -------------- Functions --------------
 def preprocess_image(image):
-    img_resized = image.resize((180, 180))
-    img_array = np.array(img_resized) / 255.0
-    img_array = np.expand_dims(img_array, axis=0)
-    return img_array
+    image = image.resize((180, 180))
+    return np.expand_dims(np.array(image) / 255.0, axis=0)
 
-def get_confidence(prediction):
-    return max(prediction[0])
+def get_prediction(img_array):
+    pred = model.predict(img_array)
+    label = "cat" if pred[0][0] < 0.5 else "dog"
+    confidence = float(pred[0][0] if label == "dog" else 1 - pred[0][0])
+    return label, confidence
 
-def play_animal_sound(label):
-    sound_path = f"Deployment/{label}.mp3"
-    if os.path.exists(sound_path):
-        with open(sound_path, "rb") as audio_file:
-            st.audio(audio_file.read(), format="audio/mp3", start_time=0)
-    else:
-        st.error(f"Sound file for {label} not found.")
+def play_sound(label):
+    path = f"Deployment/{label}.mp3"
+    if os.path.exists(path):
+        with open(path, "rb") as audio:
+            st.audio(audio.read(), format="audio/mp3")
 
 def speak(text):
     tts = gTTS(text)
-    tts.save("response.mp3")
-    with open("response.mp3", "rb") as audio_file:
-        st.audio(audio_file.read(), format='audio/mp3')
+    tts.save("temp.mp3")
+    with open("temp.mp3", "rb") as audio:
+        st.audio(audio.read(), format="audio/mp3")
 
-# ========== Main Logic ==========
-if uploaded_file is not None:
-    img = Image.open(uploaded_file).convert('RGB')
-    st.image(img, caption="Your uploaded image \U0001F446", use_container_width=True)
+# -------------- Main Logic --------------
+if image_file:
+    img = Image.open(image_file).convert("RGB")
+    st.image(img, caption="Uploaded Image", use_column_width=True)
 
-    with st.spinner("Analyzing image..."):
-        for i in range(0, 101, 10):
-            st.progress(i)
-            time.sleep(0.05)
-
+    with st.spinner("Analyzing..."):
+        st.progress(25)
+        time.sleep(0.2)
         img_array = preprocess_image(img)
-        prediction = model.predict(img_array)
-        confidence = get_confidence(prediction)
+        st.progress(50)
+        label, confidence = get_prediction(img_array)
+        st.progress(100)
 
-        label = "cat" if prediction[0][0] < 0.5 else "dog"
-        emoji = "\U0001F431" if label == "cat" else "\U0001F436"
+    emoji = "🐱" if label == "cat" else "🐶"
+    st.success(f"{emoji} It's a **{label.upper()}** with {confidence * 100:.2f}% confidence!")
 
-        st.success(f"{emoji} It's a **{label.upper()}** with {confidence*100:.2f}% confidence!")
-        st.slider("Confidence Level", min_value=0.0, max_value=1.0, value=float(confidence), step=0.01)
+    st.slider("Confidence", min_value=0.0, max_value=1.0, value=confidence, step=0.01, disabled=True)
 
-        if guess.lower() == label:
-            leaderboard["Correct Guesses"] += 1
-            st.success("\U0001F389 You guessed it right!")
-            st.balloons()
-        elif guess != "Not Sure":
-            leaderboard["Wrong Guesses"] += 1
-            st.warning(f"Oops! It was a **{label}**.")
+    # Evaluate Guess
+    if guess.lower() == label:
+        score["Correct"] += 1
+        st.balloons()
+        st.success("Correct guess!")
+    elif guess != "Not Sure":
+        score["Incorrect"] += 1
+        st.warning(f"Wrong! It was a **{label}**.")
 
-        st.info(random.choice(compliments[label]))
-        st.write(f"\U0001F4A1 **Did you know?** {random.choice(animal_facts[label])}")
+    st.info(random.choice(compliments[label]))
+    st.info(f"💡 Fun Fact: {random.choice(facts[label])}")
 
-        if st.button(f"\U0001F50A Play {label.capitalize()} Sound"):
-            play_animal_sound(label)
+    if st.button(f"🔊 Hear {label.capitalize()} Sound"):
+        play_sound(label)
 
-        speak(f"It's a {label} with {confidence * 100:.2f} percent confidence!")
+    speak(f"It's a {label} with {confidence*100:.2f} percent confidence.")
 
-# ========== Leaderboard ==========
-st.markdown("## Leaderboard")
-st.table(leaderboard)
+# -------------- Scoreboard --------------
+st.markdown("---")
+st.subheader("📊 Scoreboard")
+st.write(score)
 
-st.markdown("</div>", unsafe_allow_html=True)
-st.markdown('<footer>\U0001F43E Made with ❤️ by MennatullahTarek </footer>', unsafe_allow_html=True)
+st.caption("Made with ❤️ by MennatullahTarek")
