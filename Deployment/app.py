@@ -11,7 +11,7 @@ import requests
 
 # ========== Function to download the model from Google Drive ==========
 def download_model():
-    file_id = "18RlTZvweyDneAUAVyMsgumENyBb5KHa-"  # <-- replace this with your file ID
+    file_id = "18RlTZvweyDneAUAVyMsgumENyBb5KHa-"
     file_url = f"https://drive.google.com/uc?export=download&id={file_id}"
     response = requests.get(file_url)
 
@@ -71,15 +71,25 @@ leaderboard = {
 # ========== UI and CSS ==========
 st.markdown("""
     <style>
+        body {
+            background-color: #fef6ff;
+        }
         .main {
             background: #fffaf0;
             padding: 40px;
-            border-radius: 15px;
+            border-radius: 25px;
             text-align: center;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
             max-width: 850px;
             margin: auto;
             border: 4px dashed #f08;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+        footer {
+            margin-top: 40px;
+            font-size: 16px;
+            color: #999;
+            text-align: center;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -148,7 +158,7 @@ if uploaded_file is not None:
         st.info(random.choice(compliments[label]))
         st.write(f"\U0001F4A1 **Did you know?** {random.choice(animal_facts[label])}")
 
-        if st.button(f"🔊 Play {label.capitalize()} Sound"):
+        if st.button(f"\U0001F50A Play {label.capitalize()} Sound"):
             play_animal_sound(label)
 
         speak(f"It's a {label} with {confidence * 100:.2f} percent confidence!")
