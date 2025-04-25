@@ -8,6 +8,9 @@ import random
 from gtts import gTTS
 import time
 import plotly.express as px
+import requests
+from streamlit_lottie import st_lottie
+
 
 # ========== Sidebar ========== #
 st.set_page_config(page_title="Cat vs Dog Classifier", layout="wide")
@@ -70,6 +73,13 @@ def plot_confidence(conf):
     fig.update_traces(textposition="outside", marker_color="#fd7e14")
     fig.update_layout(title="Model Confidence", yaxis_title="%", showlegend=False)
     st.plotly_chart(fig, use_container_width=True)
+
+# Function to load Lottie JSON from a URL
+def load_lottie_url(url: str):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
 
 # ========== Home Page ========== #
 if page == "Home":
