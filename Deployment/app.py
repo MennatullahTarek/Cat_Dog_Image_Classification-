@@ -128,30 +128,26 @@ if page == "Home":
         # Confidence Plot
         plot_confidence(conf)
 
-        # ==== If Correct Guess ==== #
-        if guess.lower() == label.lower() and guess != "Not Sure":
-            # Celebrate Correct Guess
-            st.balloons()  # Add Balloons for Celebration 🎈
-            # Play the correct animal sound based on the prediction
-            audio_path = "Deployment/cat.mp3" if label == "cat" else "Deployment/dog.mp3"
-            st.audio(audio_path, format="audio/mp3")
-            st.success("🎉 Great job! You guessed it right! 🐱🐶")
-            
-            # Optional Lottie Animation (if available)
-            animal_party_url = "https://lottie.host/7b92b97a-9aeb-42df-bd91-622d8eb80347/hGMpbibYrh.json"
-            try:
-                animal_party_json = load_lottie_url(animal_party_url)
-                if animal_party_json:
-                    st_lottie(animal_party_json, height=300, key="celebrate")
-                else:
-                    st.write("🎉 Lottie animation failed to load.")
-            except Exception as e:
-                st.write(f"🎉 Lottie animation error: {str(e)}")
-                st.write("🎉 Let's celebrate anyway!")
+       # ==== If Correct Guess ==== #
+if guess.lower() == label.lower() and guess != "Not Sure":
+    # Celebrate Correct Guess
+    st.balloons()  # Add Balloons for Celebration 🎈
+    
+    # Play the correct animal sound based on the prediction
+    audio_path = "Deployment/cat.mp3" if label == "cat" else "Deployment/dog.mp3"
+    st.audio(audio_path, format="audio/mp3")
+    
+    st.success("🎉 Great job! You guessed it right! 🐱🐶")
+    
+    # Show GIF based on the prediction
+    if label == "cat":
+        st.image("Deployment/cat_celebration.gif", caption="Cat Celebration 🎉", use_column_width=True)
+    else:
+        st.image("Deployment/dog_celebration.gif", caption="Dog Celebration 🎉", use_column_width=True)
 
-        # ==== If Incorrect Guess ==== #
-        elif guess != "Not Sure":
-            st.warning("😿 Oops! Try again, you're close!")
+# ==== If Incorrect Guess ==== #
+elif guess != "Not Sure":
+    st.warning("😿 Oops! Try again, you're close!")
 
         # Cute Animal Sound 🐾
         audio_path = "Deployment/cat.mp3" if label == "cat" else "Deployment/dog.mp3"
