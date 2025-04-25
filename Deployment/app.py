@@ -68,35 +68,30 @@ def speak(text):
 
 def plot_confidence(conf):
     percentage = conf * 100
-    fig = px.bar(
-        x=["Prediction Confidence"],
-        y=[percentage],
-        text=[f"{percentage:.2f}%"],
-        color_discrete_sequence=["#4B8BBE"]
-    )
+    bar_color = "#4B8BBE"  # Nice blue tone
 
-    fig.update_traces(
-        textposition="outside",
-        marker_line_color='rgba(0,0,0,0.05)',
-        marker_line_width=1.5
-    )
+    st.markdown(f"""
+        <div style="margin-top: 30px;">
+            <h4 style="text-align:center; color:#4B8BBE;">📊 Model Confidence</h4>
+            <div style="background-color:#eee; border-radius:30px; padding:5px; width:100%; height:30px;">
+                <div style="
+                    width: {percentage}%;
+                    background-color: {bar_color};
+                    height: 100%;
+                    border-radius: 30px;
+                    text-align: center;
+                    color: white;
+                    line-height: 20px;
+                    font-weight: bold;
+                    font-size: 16px;
+                    transition: width 1.5s ease-in-out;
+                ">
+                    {percentage:.2f}%
+                </div>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
 
-    fig.update_layout(
-        title={
-            'text': "📊 Model Confidence",
-            'x': 0.5,
-            'xanchor': 'center',
-            'font': dict(size=22, color="#333", family="Segoe UI")
-        },
-        yaxis=dict(title="Confidence (%)", range=[0, 100]),
-        xaxis=dict(showticklabels=False),
-        plot_bgcolor='rgba(0,0,0,0)',
-        paper_bgcolor='rgba(0,0,0,0)',
-        font=dict(family="Segoe UI", size=14, color="#333"),
-        margin=dict(t=60, b=40)
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
 
 
 # Load Lottie JSON
