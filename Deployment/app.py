@@ -145,6 +145,6 @@ elif page == "How It Works":
     - It is normalized and passed through a CNN model.
     - The model outputs a probability, and we map it to `cat` or `dog` using a 0.5 threshold.
     """)
-    st.image("https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Convolutional_Neural_Network_Schema.png/800px-Convolutional_Neural_Network_Schema.png", caption="CNN Flow (Source: Wikipedia)")
+    st.image("https://learnopencv.com/wp-content/uploads/2023/01/tensorflow-keras-cnn-vgg-architecture.png", caption="CNN Flow (Source: Wikipedia)")
 
 st.markdown("</div>", unsafe_allow_html=True)
