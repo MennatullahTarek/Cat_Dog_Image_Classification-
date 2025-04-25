@@ -141,7 +141,7 @@ if page == "Home":
         emoji = "🐱" if label == "cat" else "🐶"
         st.success(f"{emoji} It's a **{label.upper()}** with {conf*100:.2f}% confidence!")
 
-        plot_confidence(conf)
+        #plot_confidence(conf)
 
         if guess.lower() == label.lower() and guess != "Not Sure":
             st.balloons()
