@@ -126,7 +126,7 @@ if page == "Home":
         st.success(f"{emoji} It's a **{label.upper()}** with {conf*100:.2f}% confidence!")
 
         # Confidence Plot
-            plot_confidence(conf)
+        plot_confidence(conf)
         # ==== If Correct Guess ==== #
         if guess.lower() == label.lower() and guess != "Not Sure":
             # Celebrate Correct Guess
