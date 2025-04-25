@@ -145,6 +145,38 @@ if page == "Home":
         # Voice output
         if st.toggle("🔈 Hear it"):
             speak(f"It's a {label} with {conf*100:.2f} percent confidence.")
+            
+        # 🧠 Fun Facts
+        fun_facts = {
+            "cat": [
+                "Cats can rotate their ears 180 degrees!",
+                "A group of cats is called a clowder.",
+                "Cats sleep for around 13–16 hours a day.",
+                "Your cat’s purring may be healing—it’s thought to reduce stress and promote bone healing!",
+            ],
+            "dog": [
+                "Dogs have a sense of time and can get jealous!",
+                "Dalmatian puppies are born completely white.",
+                "A Greyhound can beat a cheetah in a long-distance race!",
+                "Dogs’ noses are as unique as human fingerprints.",
+            ]
+        }
+
+        selected_fact = random.choice(fun_facts[label])
+
+        st.markdown(f"""
+            <div style='
+                background-color: #f9f9f9;
+                border-left: 5px solid #f39c12;
+                padding: 1rem;
+                margin-top: 2rem;
+                border-radius: 8px;
+                font-size: 1.1rem;
+            '>
+                🧠 <strong>Did you know?</strong><br>
+                {selected_fact}
+            </div>
+        """, unsafe_allow_html=True)
 
 # ========== About Page ========== #
 elif page == "About":
