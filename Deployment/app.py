@@ -158,7 +158,7 @@ if page == "Home":
 
             # Online celebration GIFs
             cat_gif_url = "https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif"
-            dog_gif_url = "https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif"
+            dog_gif_url = "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExamkwb212c3d4OWtmejh0djdya3gwYWZ6cDh0aG10a3Z4MXd3bG1yYSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/9rtpurjbqiqZXbBBet/giphy.webp"
             gif_url = cat_gif_url if label == "cat" else dog_gif_url
             st.image(gif_url, caption=f"{label.capitalize()} Celebration 🎉", use_container_width=True)
 
