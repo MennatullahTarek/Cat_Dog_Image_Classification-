@@ -67,10 +67,37 @@ def speak(text):
     st.audio("tts.mp3")
 
 def plot_confidence(conf):
-    fig = px.bar(x=["Confidence"], y=[conf * 100], range_y=[0, 100], text=[f"{conf*100:.2f}%"])
-    fig.update_traces(textposition="outside", marker_color="#fd7e14")
-    fig.update_layout(title="Model Confidence", yaxis_title="%", showlegend=False)
+    percentage = conf * 100
+    fig = px.bar(
+        x=["Prediction Confidence"],
+        y=[percentage],
+        text=[f"{percentage:.2f}%"],
+        color_discrete_sequence=["#4B8BBE"]
+    )
+
+    fig.update_traces(
+        textposition="outside",
+        marker_line_color='rgba(0,0,0,0.05)',
+        marker_line_width=1.5
+    )
+
+    fig.update_layout(
+        title={
+            'text': "📊 Model Confidence",
+            'x': 0.5,
+            'xanchor': 'center',
+            'font': dict(size=22, color="#333", family="Segoe UI")
+        },
+        yaxis=dict(title="Confidence (%)", range=[0, 100]),
+        xaxis=dict(showticklabels=False),
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font=dict(family="Segoe UI", size=14, color="#333"),
+        margin=dict(t=60, b=40)
+    )
+
     st.plotly_chart(fig, use_container_width=True)
+
 
 # Load Lottie JSON
 def load_lottie_url(url: str):
