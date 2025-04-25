@@ -123,7 +123,9 @@ if page == "Home":
         if guess.lower() == label.lower() and guess != "Not Sure":
             # Celebrate Correct Guess
             st.balloons()  # Add Balloons for Celebration 🎈
-            st.audio("Deployment/celebration_sound.mp3", format="audio/mp3")
+            # Play the correct animal sound based on the prediction
+            audio_path = "Deployment/cat.mp3" if label == "cat" else "Deployment/dog.mp3"
+            st.audio(audio_path, format="audio/mp3")
             st.success("🎉 Great job! You guessed it right! 🐱🐶")
             
             # Optional Lottie Animation (if available)
@@ -142,6 +144,7 @@ if page == "Home":
         # Optional Voice Output
         if st.toggle("🔈 Hear it"):
             speak(f"It's a {label} with {conf*100:.2f} percent confidence.")
+
 
 # ========== About Page ========== #
 elif page == "About":
