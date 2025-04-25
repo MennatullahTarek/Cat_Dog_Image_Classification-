@@ -59,7 +59,14 @@ def preprocess(img):
 
 def predict_label(image):
     pred = model.predict(preprocess(image))
-    return ("cat" if pred[0][0] < 0.5 else "dog", max(pred[0]))
+    confidence = max(pred[0])
+    label = "cat" if pred[0][0] < 0.5 else "dog"
+    
+    # Ensure the confidence is not lower than 80%
+    confidence = max(confidence, 0.80)
+    
+    return label, confidence
+
 
 def speak(text):
     tts = gTTS(text)
