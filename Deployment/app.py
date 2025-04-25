@@ -126,27 +126,27 @@ if page == "Home":
         st.success(f"{emoji} It's a **{label.upper()}** with {conf*100:.2f}% confidence!")
 
         # Confidence Plot
-        plot_confidence(conf)
-# ==== If Correct Guess ==== #
-if guess.lower() == label.lower() and guess != "Not Sure":
-    # Celebrate Correct Guess
-    st.balloons()  # Add Balloons for Celebration 🎈
-    
-    # Play the correct animal sound based on the prediction
-    audio_path = "Deployment/cat.mp3" if label == "cat" else "Deployment/dog.mp3"
-    st.audio(audio_path, format="audio/mp3")
-    
-    st.success("🎉 Great job! You guessed it right! 🐱🐶")
-    
-    # Show GIF based on the prediction
-    if label == "cat":
-        st.image("Deployment/cat_celebration.gif", caption="Cat Celebration 🎉", use_column_width=True)
-    else:
-        st.image("Deployment/dog_celebration.gif", caption="Dog Celebration 🎉", use_column_width=True)
-
-# ==== If Incorrect Guess ==== #
-elif guess != "Not Sure":
-    st.warning("😿 Oops! Try again, you're close!")
+                plot_confidence(conf)
+        # ==== If Correct Guess ==== #
+        if guess.lower() == label.lower() and guess != "Not Sure":
+            # Celebrate Correct Guess
+            st.balloons()  # Add Balloons for Celebration 🎈
+            
+            # Play the correct animal sound based on the prediction
+            audio_path = "Deployment/cat.mp3" if label == "cat" else "Deployment/dog.mp3"
+            st.audio(audio_path, format="audio/mp3")
+            
+            st.success("🎉 Great job! You guessed it right! 🐱🐶")
+            
+            # Show GIF based on the prediction
+            if label == "cat":
+                st.image("Deployment/cat_celebration.gif", caption="Cat Celebration 🎉", use_column_width=True)
+            else:
+                st.image("Deployment/dog_celebration.gif", caption="Dog Celebration 🎉", use_column_width=True)
+        
+        # ==== If Incorrect Guess ==== #
+        elif guess != "Not Sure":
+            st.warning("😿 Oops! Try again, you're close!")
 
         # Cute Animal Sound 🐾
         audio_path = "Deployment/cat.mp3" if label == "cat" else "Deployment/dog.mp3"
