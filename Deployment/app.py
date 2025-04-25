@@ -127,8 +127,7 @@ if page == "Home":
 
         # Confidence Plot
         plot_confidence(conf)
-
-       # ==== If Correct Guess ==== #
+# ==== If Correct Guess ==== #
 if guess.lower() == label.lower() and guess != "Not Sure":
     # Celebrate Correct Guess
     st.balloons()  # Add Balloons for Celebration 🎈
