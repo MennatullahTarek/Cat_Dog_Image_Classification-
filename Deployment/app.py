@@ -78,7 +78,6 @@ def load_lottie_url(url: str):
     if r.status_code != 200:
         return None
     return r.json()
-
 # ========== Home Page ========== #
 if page == "Home":
     # ==== Styling ==== #
@@ -130,10 +129,11 @@ if page == "Home":
             st.audio(audio_path, format="audio/mp3")
             st.success("🎉 Great job! You guessed it right! 🐱🐶")
 
-            if label == "cat":
-                st.image("Deployment/cat_celebration.gif", caption="Cat Celebration 🎉", use_column_width=True)
-            else:
-                st.image("Deployment/dog_celebration.gif", caption="Dog Celebration 🎉", use_column_width=True)
+            # Online celebration GIFs
+            cat_gif_url = "https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif"
+            dog_gif_url = "https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif"
+            gif_url = cat_gif_url if label == "cat" else dog_gif_url
+            st.image(gif_url, caption=f"{label.capitalize()} Celebration 🎉", use_container_width=True)
 
         elif guess != "Not Sure":
             st.warning("😿 Oops! Try again, you're close!")
