@@ -67,31 +67,29 @@ def speak(text):
     st.audio("tts.mp3")
 
 def plot_confidence(conf):
-    percentage = conf * 100
-    bar_color = "#4B8BBE"  # Nice blue tone
+    percent = int(conf * 100)
+    color = "#4B8BBE"  # Python blue
 
     st.markdown(f"""
-        <div style="margin-top: 30px;">
-            <h4 style="text-align:center; color:#4B8BBE;">📊 Model Confidence</h4>
-            <div style="background-color:#eee; border-radius:30px; padding:5px; width:100%; height:30px;">
-                <div style="
-                    width: {percentage}%;
-                    background-color: {bar_color};
-                    height: 100%;
-                    border-radius: 30px;
-                    text-align: center;
-                    color: white;
-                    line-height: 20px;
-                    font-weight: bold;
-                    font-size: 16px;
-                    transition: width 1.5s ease-in-out;
-                ">
-                    {percentage:.2f}%
-                </div>
+    <div style="width: 80%; margin: 20px auto; text-align: center;">
+        <div style="font-size: 18px; font-weight: bold; color: #333;">Model Confidence</div>
+        <div style="background-color: #e0e0e0; border-radius: 10px; height: 25px; width: 100%; margin-top: 10px;">
+            <div style="
+                height: 100%;
+                width: {percent}%;
+                background-color: {color};
+                border-radius: 10px;
+                text-align: center;
+                line-height: 25px;
+                color: white;
+                font-weight: bold;
+                transition: width 1s ease-in-out;
+            ">
+                {percent}%
             </div>
         </div>
+    </div>
     """, unsafe_allow_html=True)
-
 
 
 # Load Lottie JSON
@@ -159,10 +157,6 @@ if page == "Home":
 
         elif guess != "Not Sure":
             st.warning("😿 Oops! Try again, you're close!")
-
-        # Animal sound
-        audio_path = "Deployment/cat.mp3" if label == "cat" else "Deployment/dog.mp3"
-        st.audio(audio_path, format="audio/mp3", start_time=0)
 
         # Voice output
         if st.toggle("🔈 Hear it"):
