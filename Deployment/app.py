@@ -72,10 +72,6 @@ def plot_confidence(conf):
     st.plotly_chart(fig, use_container_width=True)
 
 # ========== Home Page ========== #
-from PIL import Image
-import streamlit as st
-
-# ========== Home Page ========== #
 if page == "Home":
     # ==== Styling ==== #
     st.markdown(
@@ -122,6 +118,22 @@ if page == "Home":
 
         # Confidence Plot
         plot_confidence(conf)
+
+        # ==== If Correct Guess ==== #
+        if guess.lower() == label.lower() and guess != "Not Sure":
+            # Celebrate Correct Guess
+            st.balloons()  # Add Balloons for Celebration 🎈
+            st.audio("Deployment/celebration_sound.mp3", format="audio/mp3")
+            st.success("🎉 Great job! You guessed it right! 🐱🐶")
+            
+            # Optional Lottie Animation (if available)
+            animal_party_url = "https://lottie.host/7b92b97a-9aeb-42df-bd91-622d8eb80347/hGMpbibYrh.json"
+            animal_party_json = load_lottie_url(animal_party_url)
+            st_lottie(animal_party_json, height=300, key="celebrate")
+
+        # ==== If Incorrect Guess ==== #
+        elif guess != "Not Sure":
+            st.warning("😿 Oops! Try again, you're close!")
 
         # Cute Animal Sound 🐾
         audio_path = "Deployment/cat.mp3" if label == "cat" else "Deployment/dog.mp3"
